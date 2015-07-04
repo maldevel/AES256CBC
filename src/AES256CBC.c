@@ -33,7 +33,7 @@ int Encrypt(char **cipher, const char *plain, int plen, unsigned char *aesKey, u
 	cipher_tmp = (char *)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, plen + 16);
 	if (cipher_tmp == NULL) return 0;
 
-	if (1 != EVP_EncryptUpdate(ctx, cipher_tmp, &len, plain, plen)) {
+	if (1 != EVP_EncryptUpdate(ctx, cipher_tmp, &len, plain, plen - 1)) {
 		if (ctx) EVP_CIPHER_CTX_free(ctx);
 		if (cipher_tmp) {
 			HeapFree(GetProcessHeap(), 0, cipher_tmp);
@@ -59,8 +59,10 @@ int Encrypt(char **cipher, const char *plain, int plen, unsigned char *aesKey, u
 
 	retvalue = cipherTextLen;
 
+	cipher_tmp[cipherTextLen] = '\0';
+
 	if (cipherTextLen > 0)
-		retvalue = Base64Encode(cipher, cipher_tmp, cipherTextLen);
+		retvalue = Base64Encode(cipher, cipher_tmp, cipherTextLen + 1);
 
 	if (cipher_tmp) {
 		HeapFree(GetProcessHeap(), 0, cipher_tmp);
@@ -100,7 +102,7 @@ int Decrypt(char **plain, const char *cipher, int clen, unsigned char *aesKey, u
 	*plain = (char*)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, b64DecodedLen);
 	if (*plain == NULL) return 0;
 
-	if (1 != EVP_DecryptUpdate(ctx, *plain, &len, plain_tmp, b64DecodedLen)){
+	if (1 != EVP_DecryptUpdate(ctx, *plain, &len, plain_tmp, b64DecodedLen - 1)){
 		if (ctx) EVP_CIPHER_CTX_free(ctx);
 		if (plain_tmp) {
 			HeapFree(GetProcessHeap(), 0, plain_tmp);
@@ -130,6 +132,7 @@ int Decrypt(char **plain, const char *cipher, int clen, unsigned char *aesKey, u
 	}
 
 	plainTextLen += len;
+	*(*plain + plainTextLen) = '\0';
 
 	if (ctx) EVP_CIPHER_CTX_free(ctx);
 
