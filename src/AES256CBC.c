@@ -5,10 +5,13 @@ bool GenerateKeys(const unsigned char *password, int plen, unsigned char *aesSal
 
 	if (RAND_bytes(aesSalt, 8) == 0)
 		return false;
-
 	aesSalt[PKCS5_SALT_LEN] = '\0';
 
-	if (!EVP_BytesToKey(EVP_aes_256_cbc(), EVP_sha1(), aesSalt, password, plen, AES_ROUNDS, aesKey, aesIV))
+	if (RAND_bytes(aesIV, EVP_MAX_IV_LENGTH) == 0)
+		return false;
+	aesIV[EVP_MAX_IV_LENGTH] = '\0';
+
+	if (PKCS5_PBKDF2_HMAC_SHA1(password, AES_KEY_LEN, aesSalt, PKCS5_SALT_LEN, AES_ROUNDS, AES_KEY_LEN, aesKey) == 0)
 		return false;
 
 	return true;
@@ -19,7 +22,7 @@ int Encrypt(char **cipher, const char *plain, int plen, unsigned char *aesKey, u
 
 	EVP_CIPHER_CTX *ctx;
 	unsigned char *cipher_tmp = { 0 };
-	int len = 0, cipherTextLen = 0, retvalue = 0;
+	int len = 0, cipherTextLen = 0;
 
 	if (!(ctx = EVP_CIPHER_CTX_new())) {
 		return 0;
@@ -31,7 +34,10 @@ int Encrypt(char **cipher, const char *plain, int plen, unsigned char *aesKey, u
 	}
 
 	cipher_tmp = (char *)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, plen + 16);
-	if (cipher_tmp == NULL) return 0;
+	if (cipher_tmp == NULL) {
+		if (ctx) EVP_CIPHER_CTX_free(ctx);
+		return 0;
+	}
 
 	if (1 != EVP_EncryptUpdate(ctx, cipher_tmp, &len, plain, plen - 1)) {
 		if (ctx) EVP_CIPHER_CTX_free(ctx);
@@ -57,26 +63,37 @@ int Encrypt(char **cipher, const char *plain, int plen, unsigned char *aesKey, u
 
 	if (ctx) EVP_CIPHER_CTX_free(ctx);
 
-	retvalue = cipherTextLen;
+	if (cipherTextLen <= 0) {
+		if (cipher_tmp) {
+			HeapFree(GetProcessHeap(), 0, cipher_tmp);
+			cipher_tmp = NULL;
+		}
+		return 0;
+	}
 
 	cipher_tmp[cipherTextLen] = '\0';
 
-	if (cipherTextLen > 0)
-		retvalue = Base64Encode(cipher, cipher_tmp, cipherTextLen + 1);
+	if ((cipherTextLen = Base64Encode(cipher, cipher_tmp, cipherTextLen + 1)) <= 0){
+		if (cipher_tmp) {
+			HeapFree(GetProcessHeap(), 0, cipher_tmp);
+			cipher_tmp = NULL;
+		}
+		return 0;
+	}
 
 	if (cipher_tmp) {
 		HeapFree(GetProcessHeap(), 0, cipher_tmp);
 		cipher_tmp = NULL;
 	}
 
-	return retvalue;
+	return cipherTextLen;
 }
 
 
 int Decrypt(char **plain, const char *cipher, int clen, unsigned char *aesKey, unsigned char *aesIV){
 
 	EVP_CIPHER_CTX *ctx;
-	int len = 0, b64DecodedLen = 0, plainTextLen = 0;
+	int len = 0, b64DecodedLen = 0, plainTextLen = 0, retValue = 0;
 	unsigned char *plain_tmp = { 0 };
 
 	b64DecodedLen = Base64Decode(&plain_tmp, cipher);
@@ -132,9 +149,11 @@ int Decrypt(char **plain, const char *cipher, int clen, unsigned char *aesKey, u
 	}
 
 	plainTextLen += len;
+	retValue = plainTextLen;
+
 	*(*plain + plainTextLen) = '\0';
 
 	if (ctx) EVP_CIPHER_CTX_free(ctx);
 
-	return plainTextLen;
+	return retValue;
 }

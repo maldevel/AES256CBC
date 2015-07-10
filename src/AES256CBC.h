@@ -7,6 +7,7 @@
 #include <openssl/evp.h>
 #include <openssl/buffer.h>
 #include <openssl/rand.h>
+#include "Base64.h"
 
 #define AES_ROUNDS		5
 #define AES_KEY_LEN		32

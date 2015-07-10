@@ -11,8 +11,8 @@
 int main(void){
 	const unsigned char *password = "TESTING_PASS_TESTING_PASS_TESTING_PASS_TESTING_PASS\0";
 	unsigned char aesSalt[PKCS5_SALT_LEN + 1] = { 0 };
-	unsigned char aesKey[AES_KEY_LEN] = { 0 };
-	unsigned char aesIV[EVP_MAX_IV_LENGTH] = { 0 };
+	unsigned char aesKey[AES_KEY_LEN + 1] = { 0 };
+	unsigned char aesIV[EVP_MAX_IV_LENGTH + 1] = { 0 };
 
 	const char plain[] = "PLAIN_TEXT_PLAIN_TEXT_PLAIN_TEXT\0";
 	int cipherTextLength = 0;
