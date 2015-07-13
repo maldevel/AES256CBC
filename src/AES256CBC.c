@@ -33,7 +33,7 @@ int Encrypt(char **cipher, const char *plain, int plen, unsigned char *aesKey, u
 		return 0;
 	}
 
-	cipher_tmp = (char *)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, plen + 16);
+	cipher_tmp = (unsigned char *)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, plen + 16);
 	if (cipher_tmp == NULL) {
 		if (ctx) EVP_CIPHER_CTX_free(ctx);
 		return 0;
