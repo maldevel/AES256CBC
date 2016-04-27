@@ -9,8 +9,9 @@
 #include <openssl/rand.h>
 #include "Base64.h"
 
-#define AES_ROUNDS		5
+#define ITERATIONS		10000
 #define AES_KEY_LEN		32
+#define SALT_LEN		16
 
 bool GenerateKeys(const unsigned char *password, int plen, unsigned char *aesSalt, unsigned char *aesKey, unsigned char *aesIV);
 int Encrypt(char **cipher, const char *plain, int plen, unsigned char *aesKey, unsigned char *aesIV);

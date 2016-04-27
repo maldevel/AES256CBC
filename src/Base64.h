@@ -12,5 +12,4 @@ int Base64Encode(char **dest, const char *src, unsigned int slen);
 int Base64Decode(char **dest, const char *src);
 unsigned int countDecodedLength(const char *encoded);
 
-
 #endif

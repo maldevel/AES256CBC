@@ -94,6 +94,7 @@ unsigned int countDecodedLength(const char *encoded) {
 
 	if (encoded[len - 1] == '=' && encoded[len - 2] == '=')
 		padding = 2;
+
 	else if (encoded[len - 1] == '=')
 		padding = 1;
 

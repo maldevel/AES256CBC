@@ -3,15 +3,16 @@
 
 bool GenerateKeys(const unsigned char *password, int plen, unsigned char *aesSalt, unsigned char *aesKey, unsigned char *aesIV){
 
-	if (RAND_bytes(aesSalt, 8) == 0)
+	if (RAND_bytes(aesSalt, SALT_LEN) == 0)
 		return false;
-	aesSalt[PKCS5_SALT_LEN] = '\0';
+	aesSalt[SALT_LEN] = '\0';
 
 	if (RAND_bytes(aesIV, EVP_MAX_IV_LENGTH) == 0)
 		return false;
+
 	aesIV[EVP_MAX_IV_LENGTH] = '\0';
 
-	if (PKCS5_PBKDF2_HMAC_SHA1(password, AES_KEY_LEN, aesSalt, PKCS5_SALT_LEN, AES_ROUNDS, AES_KEY_LEN, aesKey) == 0)
+	if (PKCS5_PBKDF2_HMAC_SHA1(password, AES_KEY_LEN, aesSalt, PKCS5_SALT_LEN, ITERATIONS, AES_KEY_LEN, aesKey) == 0)
 		return false;
 
 	return true;

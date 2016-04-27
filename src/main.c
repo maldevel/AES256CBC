@@ -8,7 +8,8 @@
 
 //To compile the following code you have to link OpenSSL libeay32.lib with your project.
 
-int main(void){
+int main(void)
+{
 	const unsigned char *password = "TESTING_PASS_TESTING_PASS_TESTING_PASS_TESTING_PASS\0";
 	unsigned char aesSalt[PKCS5_SALT_LEN + 1] = { 0 };
 	unsigned char aesKey[AES_KEY_LEN + 1] = { 0 };

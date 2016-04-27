@@ -194,3 +194,8 @@ FakesAssemblies/
 
 # Visual Studio 6 workspace options file
 *.opt
+
+*.sln
+src/AES256CBC.VC.db
+*.vcxproj
+src/AES256CBC.vcxproj.filters
